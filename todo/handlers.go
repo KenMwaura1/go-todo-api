@@ -12,13 +12,16 @@ type TodoHandler struct {
 }
 
 func (handler *TodoHandler) GetAll(c *fiber.Ctx) error {
-	var todos []Todo = handler.repository.FindAll()
+	todos, err := handler.repository.FindAll()
+	if err != nil {
+		return c.Status(500).JSON(err)
+	}
 	return c.JSON(todos)
 }
 
 func (handler *TodoHandler) Get(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
-	todo, err := handler.repository.Find(id)
+	todo, err := handler.repository.FindById(uint(id))
 
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
@@ -37,15 +40,7 @@ func (handler *TodoHandler) Create(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"status": "error", "message": "Review your input", "error": err})
 	}
 
-	item, err := handler.repository.Create(*data)
-
-	if err != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"status":  400,
-			"message": "Failed creating item",
-			"error":   err,
-		})
-	}
+	item := handler.repository.Create(data)
 
 	return c.JSON(item)
 }
@@ -61,7 +56,7 @@ func (handler *TodoHandler) Update(c *fiber.Ctx) error {
 		})
 	}
 
-	todo, err := handler.repository.Find(id)
+	todo, err := handler.repository.FindById(uint(id))
 
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
@@ -79,7 +74,7 @@ func (handler *TodoHandler) Update(c *fiber.Ctx) error {
 	todo.Description = todoData.Description
 	todo.Status = todoData.Status
 
-	item, err := handler.repository.Save(todo)
+	item, err := handler.repository.Save(*todo)
 
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{
@@ -100,12 +95,14 @@ func (handler *TodoHandler) Delete(c *fiber.Ctx) error {
 			"err":     err,
 		})
 	}
-	RowsAffected := handler.repository.Delete(id)
+	RowsAffected := handler.repository.Delete(uint(id))
 	statusCode := 204
-	if RowsAffected == 0 {
-		statusCode = 400
-	}
-	return c.Status(statusCode).JSON(nil)
+	return c.Status(statusCode).JSON(fiber.Map{
+		"status":  statusCode,
+		"message": "Successfully deleted todo",
+		"data":    RowsAffected,
+	})
+
 }
 
 func NewTodoHandler(repository *TodoRepository) *TodoHandler {

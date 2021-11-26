@@ -1,7 +1,6 @@
 package todo
 
 import (
-	"errors"
 	"github.com/jinzhu/gorm"
 )
 
@@ -24,13 +23,12 @@ func (repository *TodoRepository) FindAll() ([]Todo, error) {
 	return todos, nil
 }
 
-func (repository *TodoRepository) Find(id uint) (*Todo, error) {
+func (repository *TodoRepository) FindById(id uint) (*Todo, error) {
 	var todo Todo
-	err := repository.database.Find(&todo, id).Error
-	if todo.Name == "" {
-		err = errors.New("todo not found")
+	if err := repository.db.First(&todo, id).Error; err != nil {
+		return nil, err
 	}
-	return &todo, err
+	return &todo, nil
 }
 
 func (repository *TodoRepository) Update(todo *Todo) error {
@@ -44,6 +42,13 @@ func (repository *TodoRepository) Save(user Todo) (Todo, error) {
 	err := repository.db.Save(user).Error
 	return user, err
 
+}
+
+func (repository *TodoRepository) Delete(id uint) error {
+	if err := repository.db.Delete(&Todo{}, id).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewTodoRepository(database *gorm.DB) *TodoRepository {
