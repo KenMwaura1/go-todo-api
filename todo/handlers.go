@@ -1,42 +1,32 @@
 package todo
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/gorm"
-	"strconv"
 )
 
 type TodoHandler struct {
-	repository *TodoRespository
-}
-
-func NewTodoHandler(db *gorm.DB) *TodoHandler {
-	return &TodoHandler{
-		repository: repository,
-	}
+	repository *TodoRepository
 }
 
 func (handler *TodoHandler) GetAll(c *fiber.Ctx) error {
-	todos, err := handler.repository.FindAll()
-	if err != nil {
-		return c.Status(500).JSON(err)
-	}
+	var todos []Todo = handler.repository.FindAll()
 	return c.JSON(todos)
 }
 
 func (handler *TodoHandler) Get(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return c.Status(500).JSON(err)
-	}
-	todo, err := handler.repository.Find(uint(id))
+	todo, err := handler.repository.Find(id)
+
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{
-			"status":  404,
-			"message": "Todo not found",
-			"error":   err,
+			"status": 404,
+			"error":  err,
 		})
 	}
+
 	return c.JSON(todo)
 }
 
@@ -118,10 +108,17 @@ func (handler *TodoHandler) Delete(c *fiber.Ctx) error {
 	return c.Status(statusCode).JSON(nil)
 }
 
+func NewTodoHandler(repository *TodoRepository) *TodoHandler {
+	return &TodoHandler{
+		repository: repository,
+	}
+}
+
 func Register(router fiber.Router, database *gorm.DB) {
 	database.AutoMigrate(&Todo{})
-	todoRespository := NewTodoRespository(database)
-	todoHandler := NewTodoHandler(database)
+	todoRepository := NewTodoRepository(database)
+	todoHandler := NewTodoHandler(todoRepository)
+
 	movieRouter := router.Group("/todo")
 	movieRouter.Get("/", todoHandler.GetAll)
 	movieRouter.Get("/:id", todoHandler.Get)
