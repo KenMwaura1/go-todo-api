@@ -24,10 +24,28 @@ func (repository *TodoRespository) FindAll() ([]Todo, error) {
 	return todos, nil
 }
 
-func (repository *TodoRespository) FindById(id uint) (*Todo, error) {
+func (repository *TodoRespository) Find(id uint) (*Todo, error) {
 	var todo Todo
-	if err := repository.db.First(&todo, id).Error; err != nil {
-		return nil, err
+	err := repository.database.Find(&todo, id).Error
+	if todo.Name == "" {
+		err = errors.New("todo not found")
 	}
-	return &todo, nil
+	return &todo, err
+}
+
+func (repository *TodoRespository) Update(todo *Todo) error {
+	if err := repository.db.Save(todo).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repository *TodoRespository) Save(user Todo) (Todo, error) {
+	err := repository.db.Save(user).Error
+	return user, err
+
+}
+
+func NewTodoRepository(database *gorm.DB) *TodoRespository {
+	return &TodoRespository{db: database}
 }
