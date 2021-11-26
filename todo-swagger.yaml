@@ -5,7 +5,7 @@ info:
   title: "Swagger Golang Todo API"
   contact:
     email: "hi@pacheco.io"
-host: "localhost:5000"
+host: "localhost:5002"
 basePath: "/api"
 schemes:
   - "http"
