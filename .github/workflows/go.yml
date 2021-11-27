@@ -24,9 +24,6 @@ jobs:
     - name: Test
       run: go test -v ./...
 
-    - name: Lint
-      run: golint ./...
-
     - name: Format
       run: gofmt -s -w ./...
 
