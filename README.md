@@ -1,4 +1,7 @@
 # go-todo-api
+
+[![Docker Image CI](https://github.com/KenMwaura1/go-todo-api/actions/workflows/docker-image.yml/badge.svg)](https://github.com/KenMwaura1/go-todo-api/actions/workflows/docker-image.yml)
+
 A REST api in Go utilizing Fiber, Postgres and docker as a dev tool. 
 
 Allows user to create and retrive todos
