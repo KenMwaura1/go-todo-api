@@ -20,7 +20,7 @@ Ensure you have the following installed:
 
 To run the api:
 
-```
+```shell
 docker-compose up
 ```
 
